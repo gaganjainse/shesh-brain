@@ -6,10 +6,10 @@ import sys
 
 try:
     from shesh_audit.gate import Guard
-    from shesh_audit.guard import GuardedMCP as FastMCP  # type: ignore
+    from shesh_audit.mcp_guard import GuardedMCP as FastMCP  # type: ignore
     HAS_GUARD = True
 except ImportError:
-    from mcp.server.fastmcp import FastMCP
+    from fastmcp import FastMCP
     HAS_GUARD = False
     Guard = None  # type: ignore
 
