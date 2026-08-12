@@ -8,7 +8,7 @@ brain deliberately does not duplicate it.
 from __future__ import annotations
 
 from shesh_audit.gate import Guard
-from shesh_audit.kernel_bridge import KernelBridge
+from shesh_audit.kernel_bridge import KernelBridge, KernelEventKind
 from shesh_audit.mcp_guard import GuardedMCP as FastMCP
 
 mcp = FastMCP("shesh-brain")
@@ -46,6 +46,44 @@ def get_policy() -> dict:
         return {"guard": True, "rule_count": len(rules), "rules": rules}
     except Exception as e:  # noqa: BLE001 — MCP tool boundary returns error dicts
         return {"guard": True, "error": str(e)}
+
+
+@mcp.tool()
+def record_confirmation(actor: str, tool: str, approved: bool, reason: str = "") -> dict:
+    """Resolve a confirmation that route_tool_call asked for.
+
+    route_tool_call answering requires_confirmation=True starts a two-phase
+    flow; this tool is the second phase. The resolution is audit-recorded and
+    mirrored to the kernel event store like every other decision — a
+    confirmation that leaves no trail would defeat the audit design.
+    """
+    kind = KernelEventKind.CONFIRMATION_GRANTED if approved else KernelEventKind.CONFIRMATION_DENIED
+    _guard.audit.record(
+        actor, tool,
+        "confirmation-granted" if approved else "confirmation-denied",
+        args={}, result=reason,
+    )
+    _bridge.emit(kind, {"actor": actor, "tool": tool, "reason": reason})
+    return {
+        "ok": True,
+        "verdict": kind.name.lower().replace("_", "-"),
+        "actor": actor,
+        "tool": tool,
+        "may_execute": approved,
+    }
+
+
+@mcp.tool()
+def audit_tail(limit: int = 20) -> dict:
+    """Return the newest audit events (decisions, confirmations, executions).
+
+    The audit log is an append-only hash-chained ledger (see shesh-audit);
+    audit.recent() reads it without mutation. Verify chain integrity with
+    shesh-audit's own verify() — brain only serves the read view here.
+    """
+    limit = max(1, min(int(limit), 500))
+    events = _guard.audit.recent(limit)
+    return {"ok": True, "count": len(events), "events": events}
 
 
 def main() -> None:
