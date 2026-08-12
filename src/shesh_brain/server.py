@@ -1,10 +1,12 @@
-"""MCP server — packaged SheshaAOS kernel for desktop, routes tool calls through policy."""
+"""MCP server — packaged Shesh kernel for desktop, routes tool calls through policy."""
 
 from __future__ import annotations
 
+import sys
+
 try:
-    from shesh_audit.guard import GuardedMCP as FastMCP  # type: ignore
     from shesh_audit.gate import Guard
+    from shesh_audit.guard import GuardedMCP as FastMCP  # type: ignore
     HAS_GUARD = True
 except ImportError:
     from mcp.server.fastmcp import FastMCP
@@ -17,7 +19,7 @@ try:
     from shesh_audit.nexus_bridge import NexusBridge
     _bridge = NexusBridge()
     HAS_BRIDGE = True
-except Exception:
+except ImportError:
     _bridge = None
     HAS_BRIDGE = False
 
@@ -35,12 +37,12 @@ def route_tool_call(actor: str, tool: str, args: dict | None = None) -> dict:
     if HAS_BRIDGE and _bridge:
         try:
             _bridge.emit(actor, tool, verdict, args)
-        except Exception:
-            pass
+        except Exception as exc:  # noqa: BLE001 — telemetry must never break a routed call
+            print(f"nexus bridge emit failed: {exc}", file=sys.stderr)
     return {
         "allowed": True,
         "verdict": verdict if isinstance(verdict, str) else getattr(verdict, 'value', 'allow'),
-        "routed_to": "sheshaos-kernel" if HAS_BRIDGE else "stub",
+        "routed_to": "shesh-kernel" if HAS_BRIDGE else "local",
         "has_guard": HAS_GUARD,
         "has_bridge": HAS_BRIDGE,
     }
@@ -51,13 +53,25 @@ def get_policy() -> dict:
         try:
             guard = Guard()
             return {"rules": len(guard.policy.rules), "guard": True}
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 — MCP tool boundary returns error dicts
             return {"error": str(e), "guard": True}
     return {"rules": 0, "guard": False, "stub": True}
 
 @mcp.tool()
 def list_tasks() -> list[dict]:
-    return [{"id": "stub", "goal": "no scheduler yet, use shesh-orchestrator"}]
+    """Real view into shesh-orchestrator sessions when available, else empty.
+
+    Brain routes policy/audit; orchestrator owns scheduling — this bridges the
+    two so MCP clients always get a truthful answer.
+    """
+    try:
+        from shesh_orchestrator.sessions import SessionManager  # type: ignore
+
+        return SessionManager().list_sessions()
+    except ImportError:
+        return []
+    except Exception as exc:  # noqa: BLE001 — degrade gracefully, never raise in a tool
+        return [{"error": f"orchestrator unavailable: {exc}"}]
 
 @mcp.tool()
 def schedule_task(goal: str, priority: str = "P1") -> dict:

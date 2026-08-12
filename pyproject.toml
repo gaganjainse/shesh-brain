@@ -1,7 +1,7 @@
 [project]
 name = "shesh-brain"
 version = "0.1.0"
-description = "Shesh Brain — packaged SheshaAOS kernel for desktop, routes tool calls through policy Guard"
+description = "Shesh Brain — packaged SheshAOS kernel for desktop, routes tool calls through policy Guard"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "GPL-3.0-or-later" }

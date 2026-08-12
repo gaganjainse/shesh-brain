@@ -1,4 +1,5 @@
-from shesh_brain.server import route_tool_call, get_policy
+from shesh_brain.server import get_policy, route_tool_call
+
 
 def test_route():
     res = route_tool_call("test", "get_system_status", {})
