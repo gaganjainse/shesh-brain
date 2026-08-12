@@ -18,3 +18,8 @@ Task/session management (`execute`, `start_session`, `list_sessions`, …) is ow
 ```bash
 uv sync && uv run pytest
 ```
+
+## Security
+
+Security posture and vulnerability reporting: [canonical ecosystem security
+policy](https://github.com/gaganjainse/shesh-ecosystem/blob/main/SECURITY.md).
