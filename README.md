@@ -1,3 +1,5 @@
+> ⚠️ **Consolidated into [shesh-core](https://github.com/gaganjainse/shesh-core)** — this module now lives in the shesh-core monorepo (same package name, same console script). Archived 2026-08-13.
+
 # 🧠 shesh-brain
 
 Packaged SheshAOS kernel for desktop — routes tool calls through the policy Guard and mirrors every decision to the kernel event store. Brain layer.
