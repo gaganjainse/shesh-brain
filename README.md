@@ -1,29 +1,35 @@
->  **Consolidated into [shesh-core](https://github.com/gaganjainse/shesh-core)** — this module now lives in the shesh-core monorepo (same package name, same console script). Archived 2026-08-13.
-
 # shesh-brain
 
-Packaged SheshAOS kernel for desktop — routes tool calls through the policy Guard and mirrors every decision to the kernel event store. Brain layer.
+> **Superseded by [shesh-core](https://github.com/gaganjainse/shesh-core).**
+> This repository is a tombstone: its history is preserved, its source is not.
 
-- Part of [Shesh ecosystem](https://github.com/gaganjainse/shesh-ecosystem)
-- Layer: Brain (governance)
-- Provides: policy-router, kernel event bridge, tool-broker governance
-- Upstream: shesh-kernel / SheshAOS Rust workspace (crates/shesh-kernel)
+## What happened
 
-## Tools
+[ADR-0019](https://github.com/gaganjainse/shesh-docs/blob/main/src/governance/adr/0019-shesh-core-monorepo.md)
+consolidated the single-module services into one repository. A module of a few
+hundred lines is not a service: each one carried its own build configuration,
+pipeline, and security policy, and those drifted apart from each other.
 
-- `route_tool_call` — check a proposed tool call via the Guard; the decision is audit-logged and mirrored to the kernel event store; the caller executes only when allowed
-- `get_policy` — current policy rules
+The code now lives in `shesh-core` as the `shesh_brain` package, with
+the same import path and the same console script.
 
-Task/session management (`execute`, `start_session`, `list_sessions`, …) is owned by
-[shesh-orchestrator](https://github.com/gaganjainse/shesh-orchestrator) — brain does not duplicate it.
+## Why the source was removed
 
-## Dev
+Two copies of the same module drift. Keeping the code here meant a reader could
+find it, edit it, and have the change silently ignored by everything that
+actually runs.
+
+The history remains in this repository's git log. Nothing was lost.
+
+## Installing
 
 ```bash
-uv sync && uv run pytest
+pipx install git+https://github.com/gaganjainse/shesh-core.git
 ```
 
-## Security
+Console script names are unchanged, so existing client configuration keeps
+working.
 
-Security posture and vulnerability reporting: [canonical ecosystem security
-policy](https://github.com/gaganjainse/shesh-ecosystem/blob/main/SECURITY.md).
+## Licence
+
+GPL-3.0-or-later.
