@@ -1,6 +1,6 @@
-> ⚠️ **Consolidated into [shesh-core](https://github.com/gaganjainse/shesh-core)** — this module now lives in the shesh-core monorepo (same package name, same console script). Archived 2026-08-13.
+>  **Consolidated into [shesh-core](https://github.com/gaganjainse/shesh-core)** — this module now lives in the shesh-core monorepo (same package name, same console script). Archived 2026-08-13.
 
-# 🧠 shesh-brain
+# shesh-brain
 
 Packaged SheshAOS kernel for desktop — routes tool calls through the policy Guard and mirrors every decision to the kernel event store. Brain layer.
 
@@ -10,6 +10,7 @@ Packaged SheshAOS kernel for desktop — routes tool calls through the policy Gu
 - Upstream: shesh-kernel / SheshAOS Rust workspace (crates/shesh-kernel)
 
 ## Tools
+
 - `route_tool_call` — check a proposed tool call via the Guard; the decision is audit-logged and mirrored to the kernel event store; the caller executes only when allowed
 - `get_policy` — current policy rules
 
@@ -17,6 +18,7 @@ Task/session management (`execute`, `start_session`, `list_sessions`, …) is ow
 [shesh-orchestrator](https://github.com/gaganjainse/shesh-orchestrator) — brain does not duplicate it.
 
 ## Dev
+
 ```bash
 uv sync && uv run pytest
 ```
